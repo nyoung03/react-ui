@@ -5,8 +5,6 @@ const Base = styled.div``;
 
 const Container = styled.div`
   position: relative;
-  width: 60%;
-  margin: auto;
 `;
 
 const ArrowButton = styled.button<{ pos: "left" | "right" }>`
@@ -14,18 +12,20 @@ const ArrowButton = styled.button<{ pos: "left" | "right" }>`
   top: 50%;
   z-index: 1;
   padding: 8px 12px;
-  font-size: 35px;
+  font-size: 48px;
+  font-weight: bold;
   background-color: transparent;
-  margin: 0;
   color: #fff;
-  border: 1px solid #fff;
+  border: none;
+  margin: 0;
   cursor: pointer;
 
-  ${({ pos }) => (pos === "left" ? "left:0" : "right: 0")}
+  ${({ pos }) => (pos === "left" ? "left: 0" : "right: 0")}
 `;
 
 const CarouselList = styled.ul`
   list-style: none;
+  margin: 0;
   padding: 0;
   display: flex;
   overflow: hidden;
@@ -36,10 +36,21 @@ const CarouselListItem = styled.li<{ activeIndex: number }>`
   flex: 1 0 100%;
   transform: translateX(-${({ activeIndex }) => activeIndex * 100}%);
   transition: 200ms ease;
-
   img {
     width: 100%;
+    height: fit-content;
   }
+`;
+
+const NavButton = styled.button<{ isActive?: boolean }>`
+  width: 4px;
+  height: 4px;
+  background-color: #000;
+  opacity: ${({ isActive }) => (isActive ? 0.3 : 0.1)};
+`;
+
+const NavItem = styled.li`
+  display: inline-block;
 `;
 
 const Nav = styled.ul`
@@ -48,60 +59,51 @@ const Nav = styled.ul`
   margin: 0 auto;
   display: flex;
   justify-content: center;
-`;
-
-const NavItem = styled.li`
-  margin-left: 4px;
-`;
-
-const NavButton = styled.button<{ isActive?: boolean }>`
-  background-color: #000;
-  width: 4px;
-  height: 8px;
-  opacity: ${(isActive) => (isActive ? 0.3 : 0.1)};
+  ${NavItem} + ${NavItem} {
+    margin-left: 4px;
+  }
 `;
 
 const banners = [
-  "https://cdn.pixabay.com/photo/2022/07/06/18/34/florence-7305768_960_720.jpg",
-  "https://cdn.pixabay.com/photo/2022/05/18/12/04/flower-7205105_960_720.jpg",
-  "https://cdn.pixabay.com/photo/2018/11/19/05/43/architecture-3824660_960_720.jpg",
-  "https://cdn.pixabay.com/photo/2022/07/10/19/30/house-7313645_960_720.jpg",
+  "https://via.placeholder.com/600/92c952",
+  "https://via.placeholder.com/600/771796",
+  "https://via.placeholder.com/600/24f355",
 ];
 
-const Carousel: React.FC = () => {
+const CarouselExample: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isFocuse, setIsFocuse] = useState<boolean>(false);
+  const [isFocuse, setIsFocuse] = useState(false);
+
   const handleNext = () => {
     setActiveIndex((prev) => (prev + 1) % banners.length);
   };
   const handlePrev = () => {
-    if (activeIndex === 0) {
-      setActiveIndex(banners.length - 1);
-    } else {
-      setActiveIndex((prev) => (prev - 1) % banners.length);
-    }
+    setActiveIndex((prev) => (prev - 1 + banners.length) % banners.length);
   };
-  const goToIndex = (idx: number) => {
+
+  const handleMouseEnter = () => setIsFocuse(true);
+  const handleMouseLeave = () => setIsFocuse(false);
+
+  const goTo = (idx: number) => {
     setActiveIndex(idx);
   };
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout;
+
     if (!isFocuse) {
-      timer = setInterval(handleNext, 3000);
+      intervalId = setInterval(handleNext, 3000);
     }
 
     return () => {
-      clearInterval(timer);
+      clearInterval(intervalId);
     };
   }, [isFocuse]);
+
   return (
-    <Base>
-      <Container
-        onMouseEnter={() => setIsFocuse(true)}
-        onMouseLeave={() => setIsFocuse(false)}
-      >
-        <ArrowButton onClick={handlePrev} pos="left">{`<`}</ArrowButton>
+    <Base onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <Container>
+        <ArrowButton pos="left" onClick={handlePrev}>{`<`}</ArrowButton>
         <CarouselList>
           {banners.map((banner, idx) => (
             <CarouselListItem activeIndex={activeIndex} key={idx}>
@@ -109,12 +111,11 @@ const Carousel: React.FC = () => {
             </CarouselListItem>
           ))}
         </CarouselList>
-        <ArrowButton onClick={handleNext} pos="right">{`>`}</ArrowButton>
+        <ArrowButton pos="right" onClick={handleNext}>{`>`}</ArrowButton>
       </Container>
-
       <Nav>
         {Array.from({ length: banners.length }).map((_, idx) => (
-          <NavItem key={idx} onClick={() => goToIndex(idx)}>
+          <NavItem key={idx} onClick={() => goTo(idx)}>
             <NavButton isActive={activeIndex === idx} />
           </NavItem>
         ))}
@@ -123,4 +124,4 @@ const Carousel: React.FC = () => {
   );
 };
 
-export default Carousel;
+export default CarouselExample;
